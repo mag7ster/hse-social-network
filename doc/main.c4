@@ -1,0 +1,93 @@
+specification {
+    element person {
+        style {
+            shape person
+            color green
+        }
+    }
+    element softwareSystem
+    element container
+    element component
+}
+
+model {
+  user = person "Пользователь" "Пользователь социальной сети"
+
+  socialNetwork = softwareSystem "Социальная сеть" {
+  
+    apiGateway = container "API Gateway" {
+      description "Принимает все запросы от UI и маршрутизирует их в соответствующие сервисы"
+      technology "Go"
+    }
+    
+    userService = container "User Service" {
+      description "Управление пользователями: регистрация, аутентификация, хранение профилей и ролей"
+      technology "Go"
+      
+      component userController "User Controller" "Обрабатывает HTTP-запросы"
+      component authService "Auth Service" "Управляет аутентификацией"
+      component userManager "User Manager" "Бизнес-логика управления данными пользователей"
+    }
+    
+    postCommentService = container "Post & Comment Service" {
+      description "Управление постами и комментариями: CRUD операции, история редактирования"
+      technology "Go"
+    }
+    
+    statsService = container "Statistics Service" {
+      description "Подсчёт лайков, просмотров и комментариев, агрегирование статистических данных"
+      technology "Go"
+    }
+    
+    // Базы данных для каждого сервиса:
+    userDb = container "PostgreSQL for Users" {
+      description "Хранение данных пользователей"
+      technology "PostgreSQL"
+      style {
+        shape cylinder
+      }
+    }
+    
+    postDb = container "Cassandra for Posts/Comments" {
+      description "Хранение постов, комментариев и истории редактирования"
+      technology "Cassandra"
+      style {
+        shape cylinder
+      }
+    }
+    
+    statsDb = container "ClickHouse for Statistics" {
+      description "Хранение статистических данных (лайки, просмотры, комментарии)"
+      technology "ClickHouse"
+      style {
+        shape cylinder
+      }
+    }
+    
+    messageBroker = container "Kafka" {
+      description "Передача событий (лайки, просмотры, комментарии) от сервиса постов к сервису статистики"
+      technology "Kafka"
+      style {
+        shape queue
+      }
+    }
+  }
+  
+  user -> apiGateway "Использует"
+  apiGateway -> userService "Маршрутизирует запросы (gRPC)"
+  apiGateway -> postCommentService "Маршрутизирует запросы (gRPC)"
+  apiGateway -> statsService "Маршрутизирует запросы (gRPC)"
+  
+  userService -> userDb "Читает/Пишет" "SQL"
+  postCommentService -> postDb "Читает/Пишет" "CQL"
+  statsService -> statsDb "Читает/Пишет" "SQL"
+  
+  postCommentService -> messageBroker "Отправляет события (лайки, просмотры, комментарии)" "Kafka"
+  messageBroker -> statsService "Подписывается на события" "Kafka" 
+}
+
+views {
+   view index {
+        include *
+    }
+}
