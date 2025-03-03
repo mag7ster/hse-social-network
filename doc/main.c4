@@ -83,7 +83,7 @@ model {
   statsService -> statsDb "Читает/Пишет" "SQL"
   
   postCommentService -> messageBroker "Отправляет события (лайки, просмотры, комментарии)" "Kafka"
-  messageBroker -> statsService "Подписывается на события" "Kafka" 
+  statsService -> messageBroker "Подписывается на события" "Kafka" 
 }
 
 views {
