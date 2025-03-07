@@ -1,0 +1,37 @@
+services:
+  api_gateway:
+    build:
+      context: .
+      dockerfile: api-gateway/Dockerfile
+    command: ["--port", "8090", "--user-service", "http://user-service:8090"]
+    ports:
+      - "8090:8090"
+    depends_on:
+      - user-service
+
+  user-service:
+    build:
+      context: .
+      dockerfile: user-service/Dockerfile
+    volumes:
+      - ./user-service/signature.pub:/tmp/signature.pub
+      - ./user-service/signature.pem:/tmp/signature.pem
+    command: ["--public", "/tmp/signature.pub", "--private", "/tmp/signature.pem", "--port", "8090", "--db", "postgres://user:password@postgres:5432/dbname?sslmode=disable"]
+    ports:
+      - "8091:8090"
+    depends_on:
+      - postgres
+
+  postgres:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: dbname
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
