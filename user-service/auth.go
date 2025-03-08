@@ -6,7 +6,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -52,8 +51,7 @@ func CheckPasswordHash(password, hash string) bool {
 	return bcrypt.CompareHashAndPassword([]byte(hash), []byte(password)) == nil
 }
 
-func Authenticate(c *gin.Context) (*jwt.Token, jwt.MapClaims, error) {
-	tokenString := c.GetHeader("Authorization")
+func Authenticate(tokenString string) (*jwt.Token, jwt.MapClaims, error) {
 	log.Println(tokenString)
 	token, err := jwt.ParseWithClaims(tokenString, jwt.MapClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return rsaPublicKey, nil

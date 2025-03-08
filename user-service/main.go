@@ -19,11 +19,12 @@ var (
 
 func registerHandler(c *gin.Context) {
 	var req struct {
-		Username string `json:"username" binding:"required"`
+		Username string `json:"username" binding:"required,alphanum"`
 		Email    string `json:"email" binding:"required,email"`
 		Password string `json:"password" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
+		log.Println("Invalid input ", err.Error())
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
 		return
 	}
@@ -60,7 +61,7 @@ func registerHandler(c *gin.Context) {
 
 func loginHandler(c *gin.Context) {
 	var req struct {
-		Login    string `json:"login" binding:"required,login"`
+		Login    string `json:"login" binding:"required,alphanum"`
 		Password string `json:"password" binding:"required"`
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -103,7 +104,8 @@ func loginHandler(c *gin.Context) {
 }
 
 func whoamiHandler(c *gin.Context) {
-	_, claims, err := Authenticate(c)
+	tokenString := c.GetHeader("Authorization")
+	_, claims, err := Authenticate(tokenString)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
@@ -123,21 +125,9 @@ func whoamiHandler(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-func logoutHandler(c *gin.Context) {
-	_, claims, err := Authenticate(c)
-	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
-		return
-	}
-
-	id := GetUserIdByClaims(claims)
-
-	db.DeleteSessionByUserId(id)
-	c.JSON(http.StatusOK, gin.H{"message": "Logged out successfully"})
-}
-
 func updateProfileHandler(c *gin.Context) {
-	_, claims, err := Authenticate(c)
+	tokenString := c.GetHeader("Authorization")
+	_, claims, err := Authenticate(tokenString)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
@@ -161,7 +151,8 @@ func updateProfileHandler(c *gin.Context) {
 }
 
 func getProfileHandler(c *gin.Context) {
-	_, claims, err := Authenticate(c)
+	tokenString := c.GetHeader("Authorization")
+	_, claims, err := Authenticate(tokenString)
 	if err != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 		return
@@ -181,10 +172,10 @@ func getProfileHandler(c *gin.Context) {
 func main() {
 	log.Println("I am user service")
 
-	port := flag.Int("port", 8090, "Порт сервиса")
-	dbURL := flag.String("db", "", "URL БД")
-	privateKeyPath := flag.String("private", "", "Приватный ключ")
-	publicKeyPath := flag.String("public", "", "Публичный ключ")
+	port := flag.Int("port", 8090, "Service port")
+	dbURL := flag.String("db", "", "URL DataBase")
+	privateKeyPath := flag.String("private", "", "Private key")
+	publicKeyPath := flag.String("public", "", "Public key")
 	flag.Parse()
 
 	db = InitDB(*dbURL)
@@ -193,7 +184,6 @@ func main() {
 	r := gin.Default()
 	r.POST("/register", registerHandler)
 	r.POST("/login", loginHandler)
-	r.POST("/logout", logoutHandler)
 	r.GET("/whoami", whoamiHandler)
 	r.PUT("/profile/update", updateProfileHandler)
 	r.GET("/profile", getProfileHandler)

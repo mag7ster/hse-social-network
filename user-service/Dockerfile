@@ -6,7 +6,7 @@ COPY go.* .
 RUN go mod download -x
 
 WORKDIR /hse-social-network/user-service
-COPY user-service/main.go .
+COPY user-service/*.go .
 
 RUN go build .
 

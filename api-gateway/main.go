@@ -37,10 +37,6 @@ func main() {
 		proxy.ServeHTTP(w, r)
 	})
 
-	http.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
-		proxy.ServeHTTP(w, r)
-	})
-
 	http.HandleFunc("/whoami", func(w http.ResponseWriter, r *http.Request) {
 		proxy.ServeHTTP(w, r)
 	})
