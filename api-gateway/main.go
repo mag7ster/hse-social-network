@@ -11,9 +11,7 @@ import (
 )
 
 func main() {
-	fmt.Println("I am api gateway")
-	argsWithProg := os.Args
-	fmt.Println(argsWithProg)
+	log.Println("I am api gateway")
 
 	userServiceAddr := flag.String("user-service", "", "Address of the user service")
 	listenPort := flag.Int("port", 8090, "api gateway port")
