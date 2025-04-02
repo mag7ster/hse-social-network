@@ -3,7 +3,9 @@ services:
     build:
       context: .
       dockerfile: api-gateway/Dockerfile
-    command: ["--port", "8090", "--user-service", "http://user-service:8090"]
+    volumes:
+      - ./signature.pub:/tmp/signature.pub
+    command: ["--port", "8090", "--user-service", "http://user-service:8090", "--posts-service", "http://post-service:8090", "--public", "/tmp/signature.pub"]
     ports:
       - "8090:8090"
     depends_on:
@@ -14,8 +16,8 @@ services:
       context: .
       dockerfile: user-service/Dockerfile
     volumes:
-      - ./user-service/signature.pub:/tmp/signature.pub
-      - ./user-service/signature.pem:/tmp/signature.pem
+      - ./signature.pub:/tmp/signature.pub
+      - ./signature.pem:/tmp/signature.pem
     command: ["--public", "/tmp/signature.pub", "--private", "/tmp/signature.pem", "--port", "8090", "--db", "postgres://user:password@postgres:5432/dbname?sslmode=disable"]
     ports:
       - "8091:8090"

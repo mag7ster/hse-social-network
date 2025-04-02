@@ -15,14 +15,14 @@ service PostsCommentsService {
 message CreatePostRequest {
   string title = 1;
   string description = 2;
-  uint32 creator_id = 3;
+  uint32 user_id = 3;
   bool is_private = 4;
   repeated string tags = 5;
 }
 
 message DeletePostRequest {
   uint32 post_id = 1;
-  uint32 creator_id = 2;
+  uint32 user_id = 2;
 }
 
 message UpdatePostRequest {
@@ -31,18 +31,19 @@ message UpdatePostRequest {
   string description = 3;
   bool is_private = 4;
   repeated string tags = 5;
-  uint32 creator_id = 6;
+  uint32 user_id = 6;
+  uint32 update_flags = 7;
 }
 
 message GetPostRequest {
   uint32 post_id = 1;
-  uint32 creator_id = 2;
+  uint32 user_id = 2;
 }
 
 message ListPostsRequest {
   uint32 page = 1;
-  uint32 limit = 2;
-  uint32 creator_id = 3;
+  uint32 user_id = 2;
+  uint32 target_user_id = 3;
 }
 
 message PostResponse {
