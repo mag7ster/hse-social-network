@@ -214,7 +214,7 @@ func handleListPosts(c *gin.Context) {
 	userIDStr := c.DefaultQuery("user_id", "0")
 
 	page, err := strconv.ParseUint(pageStr, 10, 32)
-	if err != nil || page < 1 {
+	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid page parameter"})
 		return
 	}

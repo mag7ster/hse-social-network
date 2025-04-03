@@ -5,11 +5,12 @@ services:
       dockerfile: api-gateway/Dockerfile
     volumes:
       - ./signature.pub:/tmp/signature.pub
-    command: ["--port", "8090", "--user-service", "http://user-service:8090", "--posts-service", "http://post-service:8090", "--public", "/tmp/signature.pub"]
+    command: ["--port", "8090", "--user-service", "http://user-service:8090", "--posts-service", "post-service:8090", "--public", "/tmp/signature.pub"]
     ports:
       - "8090:8090"
     depends_on:
       - user-service
+      - post-service
 
   user-service:
     build:
@@ -18,22 +19,44 @@ services:
     volumes:
       - ./signature.pub:/tmp/signature.pub
       - ./signature.pem:/tmp/signature.pem
-    command: ["--public", "/tmp/signature.pub", "--private", "/tmp/signature.pem", "--port", "8090", "--db", "postgres://user:password@postgres:5432/dbname?sslmode=disable"]
+    command: ["--public", "/tmp/signature.pub", "--private", "/tmp/signature.pem", "--port", "8090", "--db", "postgres://user:password@postgres-users:5432/users_db?sslmode=disable"]
     ports:
       - "8091:8090"
     depends_on:
-      - postgres
+      - postgres-users
 
-  postgres:
+  post-service:
+    build:
+      context: .
+      dockerfile: posts-comments-service/Dockerfile
+    command: ["--port", "8090", "--db", "postgres://post_user:post_password@postgres-posts:5432/posts_db?sslmode=disable"]
+    ports:
+      - "8092:8090"
+    depends_on:
+      - postgres-posts
+
+  postgres-users:
     image: postgres:13-alpine
     environment:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: dbname
+      POSTGRES_DB: users_db
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_users_data:/var/lib/postgresql/data
+
+  postgres-posts:
+    image: postgres:13-alpine
+    environment:
+      POSTGRES_USER: post_user
+      POSTGRES_PASSWORD: post_password
+      POSTGRES_DB: posts_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_posts_data:/var/lib/postgresql/data
 
 volumes:
-  postgres_data:
+  postgres_users_data:
+  postgres_posts_data:

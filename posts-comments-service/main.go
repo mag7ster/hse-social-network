@@ -76,9 +76,8 @@ func (s *postsServer) DeletePost(ctx context.Context, req *pb.DeletePostRequest)
 	}, nil
 }
 
-// UpdatePost обновляет пост
 func (s *postsServer) UpdatePost(ctx context.Context, req *pb.UpdatePostRequest) (*pb.PostResponse, error) {
-	// Валидация запроса
+
 	if req.PostId == 0 {
 		return nil, status.Error(codes.InvalidArgument, "Post ID cannot be empty")
 	}
@@ -175,7 +174,9 @@ func (s *postsServer) ListPosts(ctx context.Context, req *pb.ListPostsRequest) (
 }
 
 func main() {
-	port := flag.Int("port", 50052, "The server port")
+	log.Println("I am posts service")
+
+	port := flag.Int("port", 8090, "The server port")
 	dbURL := flag.String("db", "", "Database connection string")
 	flag.Parse()
 
