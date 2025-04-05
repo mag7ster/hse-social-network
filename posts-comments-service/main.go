@@ -86,6 +86,7 @@ func (s *postsServer) UpdatePost(ctx context.Context, req *pb.UpdatePostRequest)
 	}
 
 	post := &Post{
+		ID:          uint(req.PostId),
 		Title:       req.Title,
 		Description: req.Description,
 		CreatorID:   uint(req.UserId),
