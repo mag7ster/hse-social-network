@@ -6,9 +6,9 @@ COPY proto/ ./proto/
 
 RUN go mod download -x
 
-WORKDIR /hse-social-network/api-gateway
-COPY api-gateway/*.go .
+WORKDIR /hse-social-network/posts-comments-service
+COPY posts-comments-service/*.go .
 
 RUN go build .
 
-ENTRYPOINT ["./api-gateway"]
+ENTRYPOINT ["./posts-comments-service"]
